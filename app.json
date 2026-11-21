@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Control de medicamentos",
+    "slug": "16-control-de-medicamentos-app",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "controlmedicamentos",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.example.controlmedicamentos"
+    },
+    "ios": {
+      "bundleIdentifier": "com.example.controlmedicamentos"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      ["expo-notifications", { "defaultChannel": "tomas" }],
+      [
+        "expo-local-authentication",
+        { "faceIDPermission": "Se usa para proteger sus datos de salud al abrir la app." }
+      ]
+    ],
+    "experiments": { "tsconfigPaths": true }
+  }
+}
