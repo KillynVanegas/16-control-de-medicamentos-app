@@ -7,6 +7,7 @@ export interface EntradaMedicamento {
   dias: string;
   hora: string; // HH:MM de la primera toma
   fechaBase: Date; // día de la primera toma
+  foto_uri?: string | null;
 }
 
 export type Errores = Partial<Record<'nombre' | 'dosis' | 'cada_horas' | 'dias' | 'hora', string>>;
@@ -17,6 +18,7 @@ export interface ValorMedicamento {
   cada_horas: number;
   dias: number | null;
   primera_toma: string;
+  foto_uri: string | null;
 }
 
 export function validarMedicamento(e: EntradaMedicamento): {
@@ -48,6 +50,13 @@ export function validarMedicamento(e: EntradaMedicamento): {
   const primera = new Date(f.getFullYear(), f.getMonth(), f.getDate(), hora.h, hora.m);
   return {
     errores,
-    valor: { nombre, dosis, cada_horas: cada, dias, primera_toma: primera.toISOString() },
+    valor: {
+      nombre,
+      dosis,
+      cada_horas: cada,
+      dias,
+      primera_toma: primera.toISOString(),
+      foto_uri: e.foto_uri ?? null,
+    },
   };
 }

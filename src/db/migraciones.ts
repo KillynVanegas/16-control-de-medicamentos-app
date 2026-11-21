@@ -21,5 +21,16 @@ export const MIGRACIONES: string[] = [
   CREATE UNIQUE INDEX ux_toma_med_hora ON toma (medicamento_id, programada_para);
   CREATE INDEX ix_toma_programada ON toma (programada_para);
   `,
-  // Fase 4 (sincronización): remote_id, updated_at, deleted, pending en cada tabla.
+  `
+  ALTER TABLE medicamento ADD COLUMN remote_id TEXT;
+  ALTER TABLE medicamento ADD COLUMN updated_at TEXT;
+  ALTER TABLE medicamento ADD COLUMN eliminado INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE medicamento ADD COLUMN pendiente_sync INTEGER NOT NULL DEFAULT 1;
+  ALTER TABLE toma ADD COLUMN remote_id TEXT;
+  ALTER TABLE toma ADD COLUMN updated_at TEXT;
+  ALTER TABLE toma ADD COLUMN eliminado INTEGER NOT NULL DEFAULT 0;
+  ALTER TABLE toma ADD COLUMN pendiente_sync INTEGER NOT NULL DEFAULT 1;
+  CREATE UNIQUE INDEX ux_medicamento_remote ON medicamento(remote_id);
+  CREATE UNIQUE INDEX ux_toma_remote ON toma(remote_id);
+  `,
 ];

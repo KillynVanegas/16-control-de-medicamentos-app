@@ -25,8 +25,8 @@ export async function buscarMedicamentos(texto: string): Promise<Medicamento[]> 
 export async function crearMedicamento(v: ValorMedicamento): Promise<number> {
   const db = await getDb();
   const r = await db.runAsync(
-    'INSERT INTO medicamento (nombre, dosis, cada_horas, primera_toma, dias) VALUES (?, ?, ?, ?, ?)',
-    [v.nombre, v.dosis, v.cada_horas, v.primera_toma, v.dias],
+    'INSERT INTO medicamento (nombre, dosis, cada_horas, primera_toma, dias, foto_uri) VALUES (?, ?, ?, ?, ?, ?)',
+    [v.nombre, v.dosis, v.cada_horas, v.primera_toma, v.dias, v.foto_uri],
   );
   return r.lastInsertRowId;
 }
@@ -34,8 +34,8 @@ export async function crearMedicamento(v: ValorMedicamento): Promise<number> {
 export async function actualizarMedicamento(id: number, v: ValorMedicamento): Promise<void> {
   const db = await getDb();
   await db.runAsync(
-    'UPDATE medicamento SET nombre = ?, dosis = ?, cada_horas = ?, primera_toma = ?, dias = ? WHERE id = ?',
-    [v.nombre, v.dosis, v.cada_horas, v.primera_toma, v.dias, id],
+    'UPDATE medicamento SET nombre = ?, dosis = ?, cada_horas = ?, primera_toma = ?, dias = ?, foto_uri = ? WHERE id = ?',
+    [v.nombre, v.dosis, v.cada_horas, v.primera_toma, v.dias, v.foto_uri, id],
   );
 }
 

@@ -9,6 +9,10 @@ export interface Medicamento {
   dias: number | null;
   foto_uri: string | null;
   activo: number;
+  remote_id?: string | null;
+  updated_at?: string | null;
+  eliminado?: number;
+  pendiente_sync?: number;
 }
 
 export interface Toma {
@@ -17,6 +21,10 @@ export interface Toma {
   programada_para: string;
   estado: EstadoToma;
   registrada_en: string | null;
+  remote_id?: string | null;
+  updated_at?: string | null;
+  eliminado?: number;
+  pendiente_sync?: number;
 }
 
 export interface TomaConMedicamento extends Toma {

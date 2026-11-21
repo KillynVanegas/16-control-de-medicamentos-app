@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Boton } from '@/components/Boton';
 import { formatoHora } from '@/domain/formato';
 import type { Errores } from '@/domain/validacion';
@@ -49,8 +52,18 @@ export default function NuevoMedicamento() {
   const [dias, setDias] = useState('');
   const [hora, setHora] = useState('08:00');
   const [fechaBase, setFechaBase] = useState(new Date());
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
+  const escala = useSharedValue(1);
+  const pellizco = Gesture.Pinch()
+    .onUpdate((evento) => {
+      escala.value = Math.min(4, Math.max(1, evento.scale));
+    })
+    .onEnd(() => {
+      if (escala.value < 1.05) escala.value = withSpring(1);
+    });
+  const estiloFoto = useAnimatedStyle(() => ({ transform: [{ scale: escala.value }] }));
 
   useEffect(() => {
     if (medId == null) return;
@@ -62,14 +75,32 @@ export default function NuevoMedicamento() {
       setDias(m.dias == null ? '' : String(m.dias));
       setHora(formatoHora(m.primera_toma));
       setFechaBase(new Date(m.primera_toma));
+      setFotoUri(m.foto_uri);
     });
   }, [medId]);
+
+  async function seleccionarFoto(camara: boolean) {
+    const permiso = camara
+      ? await ImagePicker.requestCameraPermissionsAsync()
+      : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permiso.granted) {
+      Alert.alert('Permiso requerido', 'No se pudo acceder a la foto del empaque.');
+      return;
+    }
+    const resultado = camara
+      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+    if (!resultado.canceled) {
+      escala.value = 1;
+      setFotoUri(resultado.assets[0]?.uri ?? null);
+    }
+  }
 
   async function guardar() {
     setGuardando(true);
     try {
       const r = await guardarMedicamento(
-        { nombre, dosis, cada_horas: cada, dias, hora, fechaBase },
+        { nombre, dosis, cada_horas: cada, dias, hora, fechaBase, foto_uri: fotoUri },
         medId,
       );
       if (!r.ok) {
@@ -120,6 +151,36 @@ export default function NuevoMedicamento() {
         teclado="numeric"
         ayuda="Déjelo vacío si no tiene fin"
       />
+      <Text style={estilos.etiqueta}>Foto del empaque (opcional)</Text>
+      {fotoUri && (
+        <GestureDetector gesture={pellizco}>
+          <Animated.View style={estilos.fotoContenedor}>
+            <Animated.Image source={{ uri: fotoUri }} style={[estilos.foto, estiloFoto]} />
+          </Animated.View>
+        </GestureDetector>
+      )}
+      <View style={estilos.fila}>
+        <Boton
+          titulo="Tomar foto"
+          accessibilityLabel="Tomar foto del empaque"
+          flex
+          onPress={() => seleccionarFoto(true)}
+        />
+        <Boton
+          titulo="Elegir foto"
+          accessibilityLabel="Elegir foto del empaque de la galeria"
+          flex
+          onPress={() => seleccionarFoto(false)}
+        />
+      </View>
+      {fotoUri && (
+        <Boton
+          titulo="Quitar foto"
+          accessibilityLabel="Quitar foto del empaque"
+          color={colores.textoSuave}
+          onPress={() => setFotoUri(null)}
+        />
+      )}
       <Boton
         titulo={guardando ? 'Guardando…' : 'Guardar'}
         deshabilitado={guardando}
@@ -133,6 +194,14 @@ export default function NuevoMedicamento() {
 const estilos = StyleSheet.create({
   pantalla: { padding: 16, gap: 14, backgroundColor: colores.fondo },
   etiqueta: { fontSize: tamanos.texto, fontWeight: '700', color: colores.texto },
+  fila: { flexDirection: 'row', gap: 8 },
+  fotoContenedor: {
+    height: 220,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colores.superficie,
+  },
+  foto: { width: '100%', height: '100%', resizeMode: 'contain' },
   input: {
     backgroundColor: colores.superficie,
     borderWidth: 1.5,

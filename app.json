@@ -15,6 +15,13 @@
     "plugins": [
       "expo-router",
       "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Permite tomar una foto del empaque del medicamento.",
+          "photosPermission": "Permite elegir una foto del empaque desde su galeria."
+        }
+      ],
       ["expo-notifications", { "defaultChannel": "tomas" }],
       [
         "expo-local-authentication",

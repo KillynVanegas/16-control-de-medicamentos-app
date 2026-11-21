@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Boton } from '@/components/Boton';
 import type { Medicamento } from '@/domain/tipos';
@@ -51,6 +51,13 @@ export default function Medicamentos() {
         ListEmptyComponent={<Text style={estilos.vacio}>Aún no hay medicamentos.</Text>}
         renderItem={({ item }) => (
           <View style={estilos.tarjeta}>
+            {item.foto_uri && (
+              <Image
+                source={{ uri: item.foto_uri }}
+                style={estilos.foto}
+                accessibilityLabel={`Foto del empaque de ${item.nombre}`}
+              />
+            )}
             <Text style={estilos.nombre}>{item.nombre}</Text>
             <Text style={estilos.detalle}>
               {item.dosis} · cada {item.cada_horas} h{item.dias ? ` · ${item.dias} días` : ''}
@@ -96,6 +103,13 @@ const estilos = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colores.borde,
+  },
+  foto: {
+    width: '100%',
+    height: 180,
+    resizeMode: 'contain',
+    borderRadius: 12,
+    marginBottom: 10,
   },
   nombre: { fontSize: 22, fontWeight: '700', color: colores.texto },
   detalle: { fontSize: tamanos.texto, color: colores.textoSuave, marginBottom: 10 },
