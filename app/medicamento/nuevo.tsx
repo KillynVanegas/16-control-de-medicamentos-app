@@ -12,6 +12,7 @@ import {
   obtenerMedicamento,
   sincronizarRecordatorios,
 } from '@/services/medicamentos';
+import { guardarFotoLocal } from '@/services/fotos';
 import { solicitarPermisoConExplicacion } from '@/services/notificaciones';
 import { colores, tamanos } from '@/theme';
 
@@ -84,19 +85,27 @@ export default function NuevoMedicamento() {
   }, [medId]);
 
   async function seleccionarFoto(camara: boolean) {
-    const permiso = camara
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permiso.granted) {
-      Alert.alert('Permiso requerido', 'No se pudo acceder a la foto del empaque.');
-      return;
-    }
-    const resultado = camara
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
-    if (!resultado.canceled) {
+    try {
+      const permiso = camara
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permiso.granted) {
+        Alert.alert('Permiso requerido', 'No se pudo acceder a la foto del empaque.');
+        return;
+      }
+      const resultado = camara
+        ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 })
+        : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
+      if (resultado.canceled) return;
+
+      const asset = resultado.assets[0];
+      if (!asset?.uri) throw new Error('La cámara o galería no devolvió una imagen.');
+      const extension = asset.mimeType?.split('/')[1] ?? asset.fileName?.split('.').pop() ?? 'jpg';
+      const uriPermanente = await guardarFotoLocal(asset.uri, extension);
       escala.value = 1;
-      setFotoUri(resultado.assets[0]?.uri ?? null);
+      setFotoUri(uriPermanente);
+    } catch (error) {
+      Alert.alert('No se pudo guardar la foto', mensajeError(error));
     }
   }
 
