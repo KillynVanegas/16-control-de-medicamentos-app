@@ -43,6 +43,10 @@ function Campo(props: {
   );
 }
 
+function mensajeError(error: unknown) {
+  return error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
+}
+
 export default function NuevoMedicamento() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const medId = id ? Number(id) : undefined;
@@ -98,23 +102,34 @@ export default function NuevoMedicamento() {
 
   async function guardar() {
     setGuardando(true);
+    let resultado: Awaited<ReturnType<typeof guardarMedicamento>>;
     try {
-      const r = await guardarMedicamento(
+      resultado = await guardarMedicamento(
         { nombre, dosis, cada_horas: cada, dias, hora, fechaBase, foto_uri: fotoUri },
         medId,
       );
-      if (!r.ok) {
-        setErrores(r.errores);
-        return;
-      }
-      // El permiso se pide aquí, cuando la persona activa la función, y se explica para qué.
-      await solicitarPermisoConExplicacion();
-      await sincronizarRecordatorios(r.id);
-      router.back();
-    } catch {
-      Alert.alert('No se pudo guardar', 'Intente de nuevo.');
+    } catch (error) {
+      Alert.alert('No se pudo guardar', mensajeError(error));
+      return;
     } finally {
       setGuardando(false);
+    }
+
+    if (!resultado.ok) {
+      setErrores(resultado.errores);
+      return;
+    }
+
+    router.back();
+    try {
+      // El permiso se pide aquí, cuando la persona activa la función, y se explica para qué.
+      await solicitarPermisoConExplicacion();
+      await sincronizarRecordatorios(resultado.id);
+    } catch (error) {
+      Alert.alert(
+        'Medicamento guardado',
+        `No se pudieron configurar sus recordatorios. ${mensajeError(error)}`,
+      );
     }
   }
 
