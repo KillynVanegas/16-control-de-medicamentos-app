@@ -11,7 +11,7 @@ Repositorio hermano: `16-control-de-medicamentos-api` (Fase 3, aún no creado).
 | 1 Interfaz, gestos, sensores                      | Implementada, **sin probar en dispositivo**            |
 | 2 SQLite local                                    | Implementada, **sin probar en dispositivo**            |
 | 3–4 API, login, sincronización, 2.º sensor extra  | Pendiente                                              |
-| RF-05 Foto del empaque (cámara/galería, pellizco) | Pendiente                                              |
+| RF-05 Foto del empaque (cámara/galería, pellizco) | Implementada                                           |
 
 ## Puesta en marcha
 
@@ -32,6 +32,7 @@ Para notificaciones y biometría use un development build (`expo-dev-client`) o 
 - Recordatorios locales (diarios si la frecuencia divide 24 h; si no, fechas de los próximos 7 días, renovadas al abrir la app) con acción «Posponer 10 min».
 - Sensor: sacudir silencia la alarma (botón «Silenciar» como alternativa). Háptico al registrar.
 - Adherencia semanal, historial, búsqueda por nombre, funcionamiento sin conexión.
+- Foto del empaque: tomar una foto, elegirla de la galería o ampliar el pellizco al editar/crear.
 
 ## Decisiones a confirmar
 
