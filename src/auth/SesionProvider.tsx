@@ -1,8 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { AppState } from 'react-native';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { Alert, AppState } from 'react-native';
 import type { UsuarioApi } from '@/domain/tipos';
 import { borrarSesion, obtenerToken } from './tokens';
-import { apiRequest, iniciarSesionApi, registrarApi } from '@/services/api';
+import { ApiError, apiRequest, iniciarSesionApi, registrarApi } from '@/services/api';
 import { sincronizarTodo } from '@/services/sync';
 
 interface Sesion {
@@ -36,6 +44,27 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [cargando, setCargando] = useState(true);
   const [usuario, setUsuario] = useState<UsuarioApi | null>(null);
 
+  const informarSincronizacionPendiente = useCallback((error: unknown) => {
+    const detalle = error instanceof ApiError ? ` ${error.message}` : ' Revise la conexión.';
+    Alert.alert(
+      'Sesión iniciada',
+      `La sesión está activa, pero no se pudo sincronizar.${detalle} Puede reintentarlo desde Cuenta.`,
+    );
+  }, []);
+
+  const completarAutenticacion = useCallback(
+    async (r: Awaited<ReturnType<typeof iniciarSesionApi>>) => {
+      setUsuario(r.usuario);
+      setAutenticado(true);
+      try {
+        await sincronizarTodo();
+      } catch (error) {
+        informarSincronizacionPendiente(error);
+      }
+    },
+    [informarSincronizacionPendiente],
+  );
+
   // Al pasar a segundo plano se vuelve a bloquear (datos de salud sensibles).
   useEffect(() => {
     const sub = AppState.addEventListener('change', (estado) => {
@@ -52,39 +81,46 @@ export function SesionProvider({ children }: { children: ReactNode }) {
         const r = await apiRequest<{ usuario: UsuarioApi }>('/api/auth/yo');
         setUsuario(r.usuario);
         setAutenticado(true);
-        await sincronizarTodo();
       } catch {
         await borrarSesion();
+        return;
       } finally {
         setCargando(false);
       }
+      try {
+        await sincronizarTodo();
+      } catch (error) {
+        informarSincronizacionPendiente(error);
+      }
     })();
-  }, []);
+  }, [informarSincronizacionPendiente]);
 
-  async function iniciarSesion(email: string, password: string) {
-    const r = await iniciarSesionApi(email, password);
-    setUsuario(r.usuario);
-    setAutenticado(true);
-    await sincronizarTodo();
-  }
+  const iniciarSesion = useCallback(
+    async (email: string, password: string) => {
+      const r = await iniciarSesionApi(email, password);
+      await completarAutenticacion(r);
+    },
+    [completarAutenticacion],
+  );
 
-  async function registrar(email: string, password: string) {
-    const r = await registrarApi(email, password);
-    setUsuario(r.usuario);
-    setAutenticado(true);
-    await sincronizarTodo();
-  }
+  const registrar = useCallback(
+    async (email: string, password: string) => {
+      const r = await registrarApi(email, password);
+      await completarAutenticacion(r);
+    },
+    [completarAutenticacion],
+  );
 
-  async function cerrarSesion() {
+  const cerrarSesion = useCallback(async () => {
     await borrarSesion();
     setUsuario(null);
     setAutenticado(false);
     setDesbloqueado(false);
-  }
+  }, []);
 
-  async function sincronizar() {
+  const sincronizar = useCallback(async () => {
     await sincronizarTodo();
-  }
+  }, []);
 
   const valor = useMemo(
     () => ({
@@ -98,7 +134,16 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       cerrarSesion,
       sincronizar,
     }),
-    [desbloqueado, autenticado, cargando, usuario],
+    [
+      desbloqueado,
+      autenticado,
+      cargando,
+      usuario,
+      iniciarSesion,
+      registrar,
+      cerrarSesion,
+      sincronizar,
+    ],
   );
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
 }
