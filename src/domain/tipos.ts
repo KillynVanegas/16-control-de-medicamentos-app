@@ -31,3 +31,8 @@ export interface TomaConMedicamento extends Toma {
   nombre: string;
   dosis: string;
 }
+
+export interface UsuarioApi {
+  id: string;
+  email: string;
+}

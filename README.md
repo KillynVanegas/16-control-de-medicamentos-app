@@ -10,7 +10,7 @@ Repositorio hermano: `16-control-de-medicamentos-api` (Fase 3, aún no creado).
 | 0 Configuración de IA                             | Creada; **pruebas P01–P09 pendientes** (`ia/pruebas/`) |
 | 1 Interfaz, gestos, sensores                      | Implementada, **sin probar en dispositivo**            |
 | 2 SQLite local                                    | Implementada, **sin probar en dispositivo**            |
-| 3–4 API, login, sincronización, 2.º sensor extra  | Pendiente                                              |
+| 3–4 API, login, sincronización, 2.º sensor extra  | Implementada, pendiente de pruebas en dispositivo      |
 | RF-05 Foto del empaque (cámara/galería, pellizco) | Implementada                                           |
 
 ## Puesta en marcha
@@ -33,6 +33,7 @@ Para notificaciones y biometría use un development build (`expo-dev-client`) o 
 - Sensor: sacudir silencia la alarma (botón «Silenciar» como alternativa). Háptico al registrar.
 - Adherencia semanal, historial, búsqueda por nombre, funcionamiento sin conexión.
 - Foto del empaque: tomar una foto, elegirla de la galería o ampliar el pellizco al editar/crear.
+- Sincronización offline-first con la API desplegada, autenticación segura y cuenta con sincronización manual.
 
 ## Decisiones a confirmar
 

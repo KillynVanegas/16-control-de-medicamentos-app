@@ -28,6 +28,9 @@
         { "faceIDPermission": "Se usa para proteger sus datos de salud al abrir la app." }
       ]
     ],
+    "extra": {
+      "apiUrl": "https://16-control-de-medicamentos-api.vercel.app"
+    },
     "experiments": { "tsconfigPaths": true }
   }
 }

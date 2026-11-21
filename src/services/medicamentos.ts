@@ -5,6 +5,7 @@ import { validarMedicamento, type EntradaMedicamento, type Errores } from '@/dom
 import * as medRepo from '@/repositories/medicamentos';
 import * as tomaRepo from '@/repositories/tomas';
 import { cancelarDeMedicamento, programarMedicamento } from './notificaciones';
+import { sincronizarTodo } from './sync';
 
 export { listarMedicamentos, obtenerMedicamento } from '@/repositories/medicamentos';
 
@@ -27,6 +28,7 @@ export async function guardarMedicamento(
     await tomaRepo.borrarPendientesDesde(id, new Date(Date.now() - DIA_MS).toISOString());
   }
   await asegurarTomasDeHoy(new Date());
+  sincronizarTodo().catch(() => {});
   return { ok: true, id: medId as number };
 }
 
@@ -42,6 +44,7 @@ export async function reprogramarTodos() {
 export async function eliminarMedicamento(id: number) {
   await cancelarDeMedicamento(id);
   await medRepo.eliminarMedicamento(id);
+  sincronizarTodo().catch(() => {});
 }
 
 /** Crea (si faltan) las tomas de hoy de todos los medicamentos activos. */
@@ -66,6 +69,7 @@ export async function marcarToma(toma: Toma, estado: Exclude<EstadoToma, 'pendie
   if (!puedeRegistrar(toma.programada_para, ahora))
     throw new Error('Todavía no es la hora de esta toma.');
   await tomaRepo.marcar(toma.id, estado, ahora.toISOString());
+  sincronizarTodo().catch(() => {});
 }
 
 export async function adherenciaSemanal(ahora: Date): Promise<number | null> {

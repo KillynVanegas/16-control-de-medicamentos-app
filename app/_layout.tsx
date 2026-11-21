@@ -14,8 +14,7 @@ import {
 configurarNotificaciones();
 
 function Navegacion() {
-  const { desbloqueado } = useSesion();
-
+  const { autenticado, desbloqueado } = useSesion();
   useEffect(() => {
     prepararCanalYCategoria();
     // RF-04: acción «Posponer 10 min» desde la notificación.
@@ -34,10 +33,13 @@ function Navegacion() {
 
   return (
     <Stack screenOptions={{ headerTitleStyle: { fontSize: 20 } }}>
-      <Stack.Protected guard={!desbloqueado}>
+      <Stack.Protected guard={!autenticado}>
+        <Stack.Screen name="auth" options={{ title: 'Cuenta', headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={autenticado && !desbloqueado}>
         <Stack.Screen name="bloqueo" options={{ headerShown: false }} />
       </Stack.Protected>
-      <Stack.Protected guard={desbloqueado}>
+      <Stack.Protected guard={autenticado && desbloqueado}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="medicamento/nuevo" options={{ title: 'Medicamento' }} />
       </Stack.Protected>
